@@ -59,6 +59,7 @@ export type AuditSummary = {
   }>;
 };
 
+// Railway injects the public backend URL during the frontend build.
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 
 async function apiGet<T>(path: string): Promise<T> {
