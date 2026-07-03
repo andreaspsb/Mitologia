@@ -19,8 +19,8 @@ O objetivo pratico: nao repetir a investigacao. Se precisar mexer no Railway de 
 - Deploy frontend validado: `e23393b2-b460-4d7e-ad45-018f47975f7d`, status `SUCCESS`
 - Repositorio GitHub conectado: `andreaspsb/Mitologia`
 - Branch de auto-deploy: `main`
-- Backend auto-deploy validado: deploy `cd31d554-d157-4d56-8478-17a78a1cd561`, status `SUCCESS`
-- Frontend auto-deploy validado: deploy `27cd1366-565e-45cc-8805-5a6a3db7fbfa`, status `SUCCESS`
+- Backend auto-deploy validado: deploy `f587760b-248d-4842-8b0b-07a4d24bbdc7`, commit `f50e674065fd9484d4c2ff0e400cd77c7241dc5a`, status `SUCCESS`
+- Frontend auto-deploy validado: deploy `a8918bec-4529-4771-86b6-f35cca85464b`, commit `f50e674065fd9484d4c2ff0e400cd77c7241dc5a`, status `SUCCESS`
 
 ## Regras de ouro
 
@@ -44,8 +44,10 @@ Backend:
 - Source: `andreaspsb/Mitologia`
 - Branch: `main`
 - Root directory: raiz do repositorio
-- Builder: `RAILPACK`
-- Deploy automatico validado: `cd31d554-d157-4d56-8478-17a78a1cd561`, status `SUCCESS`
+- Builder atual no Railway: `RAILPACK`
+- Config versionada do service: `backend/railway.json`
+- Watch paths versionados: `/backend/**`, `/alembic/**`, `/scripts/**`, `/pyproject.toml`, `/alembic.ini`
+- Deploy automatico validado com alteracao real: `f587760b-248d-4842-8b0b-07a4d24bbdc7`, commit `f50e674065fd9484d4c2ff0e400cd77c7241dc5a`, status `SUCCESS`
 
 Frontend:
 
@@ -55,7 +57,9 @@ Frontend:
 - Root directory: `/frontend`
 - Builder: `DOCKERFILE`
 - Dockerfile path: `/frontend/Dockerfile`
-- Deploy automatico validado: `27cd1366-565e-45cc-8805-5a6a3db7fbfa`, status `SUCCESS`
+- Config versionada do service: `frontend/railway.json`
+- Watch paths versionados: `/frontend/**`
+- Deploy automatico validado com alteracao real: `a8918bec-4529-4771-86b6-f35cca85464b`, commit `f50e674065fd9484d4c2ff0e400cd77c7241dc5a`, status `SUCCESS`
 
 Fluxo normal:
 
@@ -80,6 +84,29 @@ Observacao importante:
 - O primeiro auto-deploy do frontend falhou porque o service estava conectado ao repo sem root directory e Railpack detectou Python na raiz.
 - A correcao foi aplicar JSON patch no ambiente para definir `source.rootDirectory=/frontend`, `build.builder=DOCKERFILE` e `build.dockerfilePath=/frontend/Dockerfile`.
 - Com GitHub source, o Dockerfile path correto e `/frontend/Dockerfile`; o path `/Dockerfile` funcionava apenas no deploy manual com `railway up frontend --path-as-root`.
+- Em 2026-07-03, um commit com alteracao real de UI (`f50e674`, `Add audit entry points to home`) disparou auto-deploy automatico e terminou `SUCCESS` no frontend e no backend.
+- O backend tambem redesdobrou para uma alteracao de frontend porque ainda nao havia Watch Paths restritos no service. Os arquivos `backend/railway.json` e `frontend/railway.json` registram os Watch Paths desejados para impedir rebuild cruzado.
+
+## Config as Code e Watch Paths
+
+Railway suporta `railway.json`/`railway.toml` por service. O mecanismo oficial fica em:
+
+- Build configuration: `https://docs.railway.com/builds/build-configuration#configure-watch-paths`
+- Config as Code reference: `https://docs.railway.com/config-as-code/reference#watch-patterns`
+- Monorepo watch paths: `https://docs.railway.com/deployments/monorepo#watch-paths`
+
+Arquivos adicionados ao repo:
+
+- `backend/railway.json`
+- `frontend/railway.json`
+
+Pontos criticos:
+
+- Watch paths usam formato gitignore.
+- Mesmo com Root Directory, os patterns operam a partir de `/`.
+- Se um service usa config file customizado, o caminho do config deve ser absoluto no Railway, por exemplo `/backend/railway.json` ou `/frontend/railway.json`.
+- A CLI `railway service` nao expunha, nesta versao, um subcomando direto para editar Watch Paths.
+- O `railway config pull` requer o SDK TypeScript `railway-ts-sdk`; sem ele, gerou apenas um placeholder temporario e nao importou o projeto real.
 
 ## Por que usar WSL nativo, nao `/mnt/c`
 

@@ -119,6 +119,7 @@ Ambiente publicado com auto-deploy via GitHub:
 - Postgres gerenciado no mesmo projeto.
 
 As mudanças enviadas para `origin/main` disparam deploys automáticos no Railway.
+Validação real: o commit `f50e674` (`Add audit entry points to home`) gerou deploy automático `SUCCESS` no frontend (`a8918bec-4529-4771-86b6-f35cca85464b`) e no backend (`f587760b-248d-4842-8b0b-07a4d24bbdc7`).
 
 No Windows, use o Railway CLI pelo WSL para operações administrativas. Para deploys manuais de fallback, nunca publique direto de `/mnt/c`; copie o repositório para o filesystem nativo do WSL antes de executar `railway up`:
 
@@ -142,6 +143,8 @@ Configuração dos serviços:
 - Backend:
   - Source: `andreaspsb/Mitologia`, branch `main`, raiz do repositório.
   - Builder: Railpack.
+  - Config versionada: `backend/railway.json`.
+  - Watch paths desejados: `/backend/**`, `/alembic/**`, `/scripts/**`, `/pyproject.toml`, `/alembic.ini`.
   - Variáveis:
     - `DATABASE_URL=${{Postgres.DATABASE_URL}}`
     - `BACKEND_CORS_ORIGINS=https://mitologia-frontend-production.up.railway.app`
@@ -152,6 +155,8 @@ Configuração dos serviços:
   - Source: `andreaspsb/Mitologia`, branch `main`, root directory `/frontend`.
   - Builder: Dockerfile.
   - Dockerfile path no Railway: `/frontend/Dockerfile`.
+  - Config versionada: `frontend/railway.json`.
+  - Watch path desejado: `/frontend/**`.
   - Variável: `NEXT_PUBLIC_API_BASE_URL=https://mitologia-backend-production.up.railway.app`.
 
 Deploy manual de fallback:
