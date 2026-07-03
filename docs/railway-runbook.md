@@ -17,17 +17,69 @@ O objetivo pratico: nao repetir a investigacao. Se precisar mexer no Railway de 
 - Frontend service ID: `ef2855b0-eb26-45ef-9733-d024ab8be034`
 - Frontend URL: `https://mitologia-frontend-production.up.railway.app`
 - Deploy frontend validado: `e23393b2-b460-4d7e-ad45-018f47975f7d`, status `SUCCESS`
+- Repositorio GitHub conectado: `andreaspsb/Mitologia`
+- Branch de auto-deploy: `main`
+- Backend auto-deploy validado: deploy `cd31d554-d157-4d56-8478-17a78a1cd561`, status `SUCCESS`
+- Frontend auto-deploy validado: deploy `27cd1366-565e-45cc-8805-5a6a3db7fbfa`, status `SUCCESS`
 
 ## Regras de ouro
 
 1. Use o Railway CLI pelo WSL, nao pelo Windows nativo.
 2. Use explicitamente a distro: `wsl.exe -d Ubuntu`.
 3. Sempre carregue o Railway CLI novo com `source ~/.railway/env`.
-4. Nao publique direto de `/mnt/c/Users/andre/Repositórios Git/Mitologia`.
-5. Antes do `railway up`, copie o repo para um diretorio nativo do WSL, como `/tmp/mitologia-railway`.
-6. Para deploy, sempre informe `--service` e `--environment production`.
-7. Nunca considere deploy concluido apenas porque ele foi enfileirado; confirme `SUCCESS`.
-8. Para logs em automacao, sempre limite a saida com `--lines` e use `--json` quando possivel.
+4. Deploy normal e automatico: commit e push para `origin/main`.
+5. Nao publique manualmente direto de `/mnt/c/Users/andre/Repositórios Git/Mitologia`.
+6. Se precisar usar `railway up` como fallback, copie o repo para um diretorio nativo do WSL, como `/tmp/mitologia-railway`.
+7. Para deploy manual, sempre informe `--service` e `--environment production`.
+8. Nunca considere deploy concluido apenas porque ele foi enfileirado; confirme `SUCCESS`.
+9. Para logs em automacao, sempre limite a saida com `--lines` e use `--json` quando possivel.
+
+## Auto-deploy via GitHub
+
+O projeto esta configurado para deploy automatico a partir do GitHub.
+
+Backend:
+
+- Service: `mitologia-backend`
+- Source: `andreaspsb/Mitologia`
+- Branch: `main`
+- Root directory: raiz do repositorio
+- Builder: `RAILPACK`
+- Deploy automatico validado: `cd31d554-d157-4d56-8478-17a78a1cd561`, status `SUCCESS`
+
+Frontend:
+
+- Service: `mitologia-frontend`
+- Source: `andreaspsb/Mitologia`
+- Branch: `main`
+- Root directory: `/frontend`
+- Builder: `DOCKERFILE`
+- Dockerfile path: `/frontend/Dockerfile`
+- Deploy automatico validado: `27cd1366-565e-45cc-8805-5a6a3db7fbfa`, status `SUCCESS`
+
+Fluxo normal:
+
+```powershell
+git status
+git add .
+git commit -m "Describe change"
+git push
+```
+
+Depois do push, verificar:
+
+```powershell
+wsl.exe -d Ubuntu bash -lc "source ~/.railway/env && railway deployment list --project de345e87-0bfc-4e1b-8629-d581eb03f04d --environment production --service mitologia-backend --json"
+wsl.exe -d Ubuntu bash -lc "source ~/.railway/env && railway deployment list --project de345e87-0bfc-4e1b-8629-d581eb03f04d --environment production --service mitologia-frontend --json"
+```
+
+So considerar publicado quando o deployment mais recente do service afetado estiver em `SUCCESS`.
+
+Observacao importante:
+
+- O primeiro auto-deploy do frontend falhou porque o service estava conectado ao repo sem root directory e Railpack detectou Python na raiz.
+- A correcao foi aplicar JSON patch no ambiente para definir `source.rootDirectory=/frontend`, `build.builder=DOCKERFILE` e `build.dockerfilePath=/frontend/Dockerfile`.
+- Com GitHub source, o Dockerfile path correto e `/frontend/Dockerfile`; o path `/Dockerfile` funcionava apenas no deploy manual com `railway up frontend --path-as-root`.
 
 ## Por que usar WSL nativo, nao `/mnt/c`
 

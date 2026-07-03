@@ -109,14 +109,18 @@ npm run build
 
 Runbook detalhado com login, WSL, comandos validados, erros encontrados e recuperação: [docs/railway-runbook.md](docs/railway-runbook.md).
 
-Ambiente publicado:
+Ambiente publicado com auto-deploy via GitHub:
 
 - Projeto: `Mitologia`.
+- Repositório: `andreaspsb/Mitologia`.
+- Branch de deploy: `main`.
 - Backend: `https://mitologia-backend-production.up.railway.app`.
 - Frontend: `https://mitologia-frontend-production.up.railway.app`.
 - Postgres gerenciado no mesmo projeto.
 
-No Windows, use o Railway CLI pelo WSL. Para evitar snapshots corrompidos ao publicar direto de `/mnt/c`, copie o repositório para o filesystem nativo do WSL antes do deploy:
+As mudanças enviadas para `origin/main` disparam deploys automáticos no Railway.
+
+No Windows, use o Railway CLI pelo WSL para operações administrativas. Para deploys manuais de fallback, nunca publique direto de `/mnt/c`; copie o repositório para o filesystem nativo do WSL antes de executar `railway up`:
 
 ```bash
 mkdir -p /tmp/mitologia-railway
@@ -136,6 +140,7 @@ O projeto Railway tem três recursos:
 Configuração dos serviços:
 
 - Backend:
+  - Source: `andreaspsb/Mitologia`, branch `main`, raiz do repositório.
   - Builder: Railpack.
   - Variáveis:
     - `DATABASE_URL=${{Postgres.DATABASE_URL}}`
@@ -144,11 +149,12 @@ Configuração dos serviços:
     - `RAILPACK_START_CMD=PYTHONPATH=/app/.railway-packages python -c "from alembic.config import main; main()" upgrade head && PYTHONPATH=/app/.railway-packages python scripts/bootstrap_database.py && PYTHONPATH=/app/.railway-packages python -m uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT`
   - O script `scripts/railway_set_backend_start.sh` reaplica os comandos Railpack do backend.
 - Frontend:
+  - Source: `andreaspsb/Mitologia`, branch `main`, root directory `/frontend`.
   - Builder: Dockerfile.
-  - Deploy da subpasta `frontend` com `--path-as-root`, então o Dockerfile esperado no snapshot é `/Dockerfile`.
+  - Dockerfile path no Railway: `/frontend/Dockerfile`.
   - Variável: `NEXT_PUBLIC_API_BASE_URL=https://mitologia-backend-production.up.railway.app`.
 
-Deploy:
+Deploy manual de fallback:
 
 ```bash
 railway up --service mitologia-backend --environment production --ci --message "Deploy Mitologia backend"
