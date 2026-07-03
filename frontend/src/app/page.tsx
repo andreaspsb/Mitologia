@@ -24,6 +24,9 @@ export default function HomePage() {
           <Link className="button secondary" href="/graph">
             Abrir grafo
           </Link>
+          <Link className="button secondary" href="/audit">
+            Ver auditoria
+          </Link>
         </div>
       </section>
 
@@ -41,6 +44,10 @@ export default function HomePage() {
           <article className="card">
             <h3>API e site</h3>
             <p>Expõe dados para páginas navegáveis e visualizações interativas.</p>
+          </article>
+          <article className="card">
+            <h3>Auditoria</h3>
+            <p>Mostra tipos inferidos, relações ambíguas e entidades que ainda pedem revisão.</p>
           </article>
         </div>
       </section>
